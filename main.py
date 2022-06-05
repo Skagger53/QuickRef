@@ -1,5 +1,5 @@
-# Quickly Ref copyright 2022
-# Quickly Ref is software by Matt Skaggs to expedite referral financial reviews by generating email responses. Redistribution of this code without the author's explicit permission is strictly prohibited.
+# Quick Ref copyright 2022
+# Quick Ref is software by Matt Skaggs to expedite referral financial reviews by generating email responses. Redistribution of this code without the author's explicit permission is strictly prohibited.
 
 if __name__ != "__main__":
     print("This is a standalone module. Run directly.")
