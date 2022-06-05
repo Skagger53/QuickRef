@@ -18,7 +18,7 @@ else:
         return 0
 
     # Checks if user's input is an integer or not.
-    # Returns integer version of input if yes. If no, returns None.
+    # If valid, returns integer version of input. If invalid, returns None.
     # Called from payer_setup(), get_ma_type().
     def payer_setup_type_validation(user_input, accepted):
         try:
@@ -28,8 +28,7 @@ else:
             print(f"Please enter a number from 1 to {accepted[-1]}.")
             return None
 
-        # Asks user to select a payer. Process is the the same for primary and secondary, so this function is used for both.
-
+    # Asks user to select a payer. Process is the the same for primary and secondary, so this function is used for both.
     # Returns the user's selection if input is validated; invalid input returns None.
     # options is consecutively numbered dictionary of payers that starts at 1.
     # Called from get_ma_type(), payers_input().
@@ -42,7 +41,7 @@ else:
         return None
 
     # Getting the MA type.
-    # None is returned to indicate an error from user input.
+    # None is returned to indicate an error from user input. Otherwise returns user's integer selection.
     # Called from payers_input().
     def get_ma_type(ma_types):
         ma_type_list_len = range(1, len(ma_types) + 1 )
@@ -53,7 +52,8 @@ else:
         return None
 
     # Asking user for input for payers.
-    # Payer always starts as None, setup_options is the questions asked of the user, and validation_list is the integers that will be accepted.
+    # Payer always starts as None, setup_options is the questions asked of the user, and validation_list is the list of consecutive integers starting at 1 that will be accepted.
+    # Reference prim_payers_list and sec_payers_list in main() for the payer checks below
     # Called from payers_setup().
     def payers_input(directions, payer, setup_options, managing_payers, ma_types):
         managing_payer = None
@@ -69,14 +69,13 @@ else:
             while ma_type == None: ma_type = get_ma_type(ma_types)
         return payer, managing_payer, ma_type
 
-
-    # Creating email text based on all possible combinations of payers.
+    # Returns email text based on all possible combinations of payers.
     # User input errors from incompatibilities return None. Called from main().
     def output_text(prim_payer, prim_man_payer, sec_payer, sec_man_payer, managing_payers, ma_types, ma_type):
         # Catching incompatible user selections.
 
         # MSHO MA type selected but MSHO wasn't selected as primary payer AND primary or secondary managing payers are not selected.
-        # Choosing MA type MA02 is acceptable ONLY if identical primary/secondary managing insurances were previously selected.
+        # Choosing MA type MA02 is acceptable ONLY if identical primary/secondary managing insurances were previously selected. Ideally user should just select MSHO initially.
         if ma_type == 1 and (prim_payer != 5 and (prim_man_payer == None or sec_man_payer == None)):
             print("\nIncompatible setup (MSHO requires identical Medicare and Medicaid managing insurances). Please start over.")
             return None
@@ -91,11 +90,12 @@ else:
             print("\nIncompatible setup (MA12 type can only be straight MA). Please start over.")
             return None
 
-        # MSHO type selected when primary/secondary managed payers are identical.
+        # Checking all possible acceptable user input combinations.
+        
+        # MSHO type selected when primary/secondary managed payers are identical. This is acceptable (but a more involved process for the user instead of just selecting MSHO initially).
         if ma_type == 1: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
 
-        # Checking all possible acceptable user input combinations.
-        ma_types[7] = "none/unspecified" # Changing the initial capital to lowercase
+        ma_types[7] = ma_types[7].lower() # Changing the initial capital to lowercase for correct capitalization in email
         match prim_payer:
             case 1: # Primary Medicare
                 match sec_payer:
@@ -125,7 +125,7 @@ else:
                 return f"Fronts are fine. MSHO with {managing_payers[prim_man_payer]} (MA02 MSHO)."
 
             case 6: # Primary PP
-                return "Only payer is private pay.\n\nWe will require a down payment of $3500 to accept. I also need to know the patient's stated plans for either DC or contnuation of payment after the $3500 is exhausted, which will be approximately 8 or 9 days (and could be less)."
+                return "Only payer is private pay.\n\nWe will require a down payment of $3500 to accept. I also need to know the patient's stated plans for either DC or continuation of payment after the $3500 is exhausted, which will be in approximately 8 or 9 days (and could be fewer)."
 
     # Getting all payers from user. Called from main()
     def payers_setup(prim_payers_list, sec_payers_list, managing_payers, ma_types):
@@ -146,7 +146,7 @@ else:
         # Master lists.
         prim_payers_list = {1: "Medicare", 2: "Managed Medicare", 3: "MA", 4: "Managed MA", 5: "MSHO", 6: "Private pay"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
         sec_payers_list = {1: "MA", 2: "Managed MA", 3: "Private pay"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
-        managing_payers = {1: "Aetna", 2: "Cigna", 3: "BCBS", 4: "Humana", 5: "Medica", 6: "UHC", 7: "HealthPartners", 8: "UCare"} # This dictionary can be altered without issue as long as the numbering system is consecutive and starts at 1.
+        managing_payers = {1: "Aetna", 2: "Cigna", 3: "BCBS", 4: "Humana", 5: "Medica", 6: "UHC", 7: "HealthPartners", 8: "UCare"} # This dictionary can be altered without issue as long as the numbering system starts at 1 and is consecutive.
         ma_types = {1: "MA02 MSHO", 2: "MA12 PMAP", 3: "MA17 SNBC", 4: "MA25 MSC+", 5: "MA30 MSC+", 6: "MA35 MSC+", 7: "None/unspecified"} # NOTE: Key 7 is hard-coded in output_text() to change the value to be in all lowercase. To change this list, ensure that the case change in output_text() references the correct key. Aside from that, this dictionary may be changed as long as the numbers begin at 1 and are consecutive.
 
         # This begins user interaction. Obtains all payer information. Arguments are master payer lists.
@@ -155,7 +155,8 @@ else:
         # This obtains and displays the final email message output
         os.system("cls")
         output = output_text(prim_payer, prim_man_payer, sec_payer, sec_man_payer, managing_payers, ma_types, ma_type)
-        if output != None: # Any incompatible user input will always return None for output variable
+        if output != None: # Any 
+            user input will always return None for output variable
             print(output)
             pyperclip.copy(output)
             print("\n----------------\n\nThe above message has been copied to your clipboard.\n")
