@@ -1,5 +1,5 @@
 # QuickRef
-Highly specific software to create financial approval email messages based on MN skilled nursing facility (SNF) referral payer setups. Runs in the terminal only.
+Highly specific Python software to create financial approval email messages based on MN skilled nursing facility (SNF) referral payer setups. Runs in the terminal only.
 
 This minimalistic software serves a very specific purpose for a narrow application.
 When I financially review referrals to our SNF, nearly all referrals prompt a response from me that fits one of about 10 basic forms/templates.
