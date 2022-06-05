@@ -1,6 +1,6 @@
 # Quick Ref copyright 2022
-# Quick Ref is software by Matt Skaggs to expedite referral financial reviews by generating email responses.
-# Redistribution of this code without the author's explicit permission is strictly prohibited.
+# Quick Ref is software by Matt Skaggs to expedite BOM referral financial reviews at a SNF healthcare facility by generating email responses.
+# Redistribution of this code without the author's explicit permission is prohibited.
 
 if __name__ != "__main__":
     print("This is a standalone module. Run directly.")
@@ -9,17 +9,17 @@ else:
     import pyperclip
 
     # Checks if user's input is in a provided range.
-	# accepted is a list of consecutive number options to choose.
-	# Returns 0 = No, 1 = Yes.
-	# Called from payer_setup(), get_ma_type().
+    # accepted is a list of consecutive number options to choose.
+    # Returns 0 = No, 1 = Yes.
+    # Called from payer_setup(), get_ma_type().
     def input_validation_list(user_input, accepted):
         if user_input in accepted: return 1
         print(f"Please enter a number from 1 to {accepted[-1]}.")
         return 0
 
     # Checks if user's input is an integer or not.
-	# Returns integer version of input if yes. If no, returns None.
-	# Called from payer_setup(), get_ma_type().
+    # Returns integer version of input if yes. If no, returns None.
+    # Called from payer_setup(), get_ma_type().
     def payer_setup_type_validation(user_input, accepted):
         try:
             user_input = int(user_input)
@@ -29,9 +29,9 @@ else:
             return None
 
     # Asks user to select a payer. Process is the the same for primary and secondary, so this function is used for both.
-	# Returns the user's selection if input is validated; invalid input returns None.
-	# options is consecutively numbered dictionary of payers that starts at 1.
-	# Called from get_ma_type(), payers_input().
+    # Returns the user's selection if input is validated; invalid input returns None.
+    # options is consecutively numbered dictionary of payers that starts at 1.
+    # Called from get_ma_type(), payers_input().
     def payer_setup(directions, options, prim_payer_input = None):
         print(directions)
         for option in range(1, len(options) + 1): print(f"{option}: {options[option]}")
@@ -41,8 +41,8 @@ else:
         return None
 
     # Getting the MA type.
-	# None is returned to indicate an error from user input.
-	# Called from payers_input().
+    # None is returned to indicate an error from user input.
+    # Called from payers_input().
     def get_ma_type(ma_types):
         ma_type_list_len = range(1, len(ma_types) + 1 )
         print("What type of MA?")
@@ -52,8 +52,8 @@ else:
         return None
 
     # Asking user for input for payers.
-	# Payer always starts as None, setup_options is the questions asked of the user, and validation_list is the integers that will be accepted.
-	# Called from payers_setup().
+    # Payer always starts as None, setup_options is the questions asked of the user, and validation_list is the integers that will be accepted.
+    # Called from payers_setup().
     def payers_input(directions, payer, setup_options, managing_payers, ma_types):
         managing_payer = None
         while payer == None: payer = payer_setup(directions, setup_options, setup_options)
@@ -69,32 +69,32 @@ else:
         return payer, managing_payer, ma_type
 
     # Creating email text based on all possible combinations of payers.
-	# User input errors from incompatibilities return None. Called from main().
+    # User input errors from incompatibilities return None. Called from main().
     def output_text(prim_payer, prim_man_payer, sec_payer, sec_man_payer, managing_payers, ma_types, ma_type):
         # Catching incompatible user selections.
         
-		# MSHO MA type selected but MSHO wasn't selected as primary payer AND primary or secondary managing payers are not selected.
-		# Choosing MA type MA02 is acceptable ONLY if identical primary/secondary managing insurances were previously selected.
-		if ma_type == 1 and (prim_payer != 5 and (prim_man_payer == None or sec_man_payer == None)):
+	# MSHO MA type selected but MSHO wasn't selected as primary payer AND primary or secondary managing payers are not selected.
+	# Choosing MA type MA02 is acceptable ONLY if identical primary/secondary managing insurances were previously selected.
+	if ma_type == 1 and (prim_payer != 5 and (prim_man_payer == None or sec_man_payer == None)):
             print("\nIncompatible setup (MSHO requires identical Medicare and Medicaid managing insurances). Please start over.")
             return None
         
-		# If MA02 is selected but different primary/secondary managing insurances were selected.
-		if ma_type == 1 and (managing_payers[prim_man_payer] != managing_payers[sec_man_payer]):
+	# If MA02 is selected but different primary/secondary managing insurances were selected.
+	if ma_type == 1 and (managing_payers[prim_man_payer] != managing_payers[sec_man_payer]):
             print("\nIncompatible setup (different managing Medicare and managing Medicaid insurances, yet MA type is MA02 MSHO). Please start over.")
             return None
         
-		# If MA12 was selected but primary payer is anything other than straight MA.
-		if ma_type == 2 and prim_payer != 3:
+	# If MA12 was selected but primary payer is anything other than straight MA.
+	if ma_type == 2 and prim_payer != 3:
             print("\nIncompatible setup (MA12 type can only be straight MA). Please start over.")
             return None
 		
-		# Returning email text
+	# Returning email text
 		
-		# MSHO type selected when primary/secondary managed payers are identical.
-		if ma_type == 1: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
+	# MSHO type selected when primary/secondary managed payers are identical.
+	if ma_type == 1: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
 
-		# Checking all possible acceptable user input combinations.
+	# Checking all possible acceptable user input combinations.
         ma_types[7] = "none/unspecified" # Changing the initial capital to lowercase
         match prim_payer:
             case 1: # Primary Medicare
