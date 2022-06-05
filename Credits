@@ -1,0 +1,14 @@
+The only modules I imported for this code are below. I did not modify the modules in any way. Use of these modules is in keeping with their licensing.
+
+os
+Part of Python's standard utility modules
+About
+https://docs.python.org/3/library/os.html
+Python license
+https://docs.python.org/3/license.html
+
+Pyperclip
+Main site
+https://pypi.org/project/pyperclip/
+License
+https://github.com/asweigart/pyperclip/blob/master/LICENSE.txt
