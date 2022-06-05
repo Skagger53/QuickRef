@@ -1,5 +1,6 @@
 # QuickRef
 Requires Python 3.10
+
 Highly specific Python software to create financial approval email messages based on MN skilled nursing facility (SNF) referral payer setups. Runs in the terminal only.
 
 This minimalistic software serves a very specific purpose.
