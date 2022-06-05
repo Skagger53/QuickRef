@@ -8,9 +8,8 @@ else:
     import os
     import pyperclip
 
-    # Checks if user's input is in a provided range.
-    # accepted is a list of consecutive number options to choose.
-    # Returns 0 = No, 1 = Yes.
+    # Validates user's input. Must be within the accepted (list of consecutive numbers starting at 1)
+    # Returns 0 = invalid, 1 = valid.    
     # Called from payer_setup(), get_ma_type().
     def input_validation_list(user_input, accepted):
         if user_input in accepted: return 1
@@ -32,12 +31,12 @@ else:
     # Returns the user's selection if input is validated; invalid input returns None.
     # options is consecutively numbered dictionary of payers that starts at 1.
     # Called from get_ma_type(), payers_input().
-    def payer_setup(directions, options, prim_payer_input = None):
+    def payer_setup(directions, options, payer_input = None):
         print(directions)
         for option in range(1, len(options) + 1): print(f"{option}: {options[option]}")
-        prim_payer_input = payer_setup_type_validation(input(), list(options.keys())) # payer_setup_type_validation checks that the user entered an integer.
-        if prim_payer_input == None: return None
-        if input_validation_list(prim_payer_input, list(options.keys())) == 1: return prim_payer_input # input_validation_list returns 1 if input is integer from range, 0 if not.
+        payer_input = payer_setup_type_validation(input(), list(options.keys())) # payer_setup_type_validation checks that the user entered an integer.
+        if payer_input == None: return None
+        if input_validation_list(payer_input, list(options.keys())) == 1: return payer_input # input_validation_list returns 1 if input is integer from range, 0 if not.
         return None
 
     # Getting the MA type.
@@ -63,18 +62,19 @@ else:
             managing_payer = None # None is used to indicate user input error for payer_setup().
             while managing_payer == None: managing_payer = payer_setup("Who is managing?", managing_payers)
 
-        # This is to obtain MA type if the user has selected MA/Managed MA.
+        # Obtaining MA type if the user has selected MA/Managed MA.
         ma_type = None
         if "MA" in setup_options[payer]:
             while ma_type == None: ma_type = get_ma_type(ma_types)
         return payer, managing_payer, ma_type
 
     # Returns email text based on all possible combinations of payers.
-    # User input errors from incompatibilities return None. Called from main().
+    # User input errors from incompatibilities prints an error message and return None, causing no further messages to user and copying nothing to the clipboard.
+    # Called from main().
     def output_text(prim_payer, prim_man_payer, sec_payer, sec_man_payer, managing_payers, ma_types, ma_type):
         # Catching incompatible user selections.
 
-        # MSHO MA type selected but MSHO wasn't selected as primary payer AND primary or secondary managing payers are not selected.
+        # MSHO MA type selected but (1) MSHO wasn't selected as primary payer AND (2) primary or secondary managing payers are not selected.
         # Choosing MA type MA02 is acceptable ONLY if identical primary/secondary managing insurances were previously selected. Ideally user should just select MSHO initially.
         if ma_type == 1 and (prim_payer != 5 and (prim_man_payer == None or sec_man_payer == None)):
             print("\nIncompatible setup (MSHO requires identical Medicare and Medicaid managing insurances). Please start over.")
@@ -108,11 +108,11 @@ else:
 
             case 2: # Primary managed Medicare
                 match sec_payer:
-                    case 1: # Managed Medicare, secondary straight MA
+                    case 1: # Primary managed Medicare, secondary straight MA
                         return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]})."
-                    case 2: # Managed Medicare, secondary Managed MA
+                    case 2: # Primary managed medicare, secondary Managed MA
                         return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}."
-                    case 3: # Managed Medicare, secondary PP
+                    case 3: # Primary managed Medicare, secondary PP
                         return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends."
 
             case 3: # Primary straight MA
@@ -155,8 +155,7 @@ else:
         # This obtains and displays the final email message output
         os.system("cls")
         output = output_text(prim_payer, prim_man_payer, sec_payer, sec_man_payer, managing_payers, ma_types, ma_type)
-        if output != None: # Any 
-            user input will always return None for output variable
+        if output != None: # Any incompatible user input will always return None for output variable
             print(output)
             pyperclip.copy(output)
             print("\n----------------\n\nThe above message has been copied to your clipboard.\n")
