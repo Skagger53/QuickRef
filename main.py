@@ -10,7 +10,7 @@ else:
 
     # Checks if user's input is in a provided range.
     # accepted is a list of consecutive number options to choose.
-    # Returns 0 = No, 1 = Yes.
+    # Returns 0 = invalid user input, 1 = valid
     # Called from payer_setup(), get_ma_type().
     def input_validation_list(user_input, accepted):
         if user_input in accepted: return 1
@@ -18,7 +18,7 @@ else:
         return 0
 
     # Checks if user's input is an integer or not.
-    # Returns integer version of input if yes. If no, returns None.
+    # If input is validated, returns integer version of input. If invalid, returns None.
     # Called from payer_setup(), get_ma_type().
     def payer_setup_type_validation(user_input, accepted):
         try:
