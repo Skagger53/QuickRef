@@ -96,7 +96,10 @@ else:
         # Checking all possible acceptable user input combinations.
 
         # MSHO type selected when primary/secondary managed payers are identical. This is acceptable (but a more involved process for the user instead of just selecting MSHO initially).
-        if ma_type == 1: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
+        if ma_type == 1:
+            if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC":  # Payers with auth upon admission
+                return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
+            else: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}.\n\nPrior auth required."
 
         ma_types[7] = ma_types[7].lower() # Changing the initial capital to lowercase for correct capitalization in email
         match prim_payer:
