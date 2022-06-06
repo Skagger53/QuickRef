@@ -7,9 +7,10 @@ if __name__ != "__main__":
 else:
     import os
     import pyperclip
+    import sys
 
     # Validates user's input. Must be within the accepted (list of consecutive numbers starting at 1)
-    # Returns 0 = invalid, 1 = valid.    
+    # Returns 0 = invalid, 1 = valid.
     # Called from payer_setup(), get_ma_type().
     def input_validation_list(user_input, accepted):
         if user_input in accepted: return 1
@@ -58,6 +59,8 @@ else:
         managing_payer = None
         while payer == None: payer = payer_setup(directions, setup_options, setup_options)
 
+        if setup_options[payer] == "Quit": sys.exit()
+
         if payer == 2 or payer == 4 or payer == 5: # If payer is managed (or MSHO for primary)
             managing_payer = None # None is used to indicate user input error for payer_setup().
             while managing_payer == None: managing_payer = payer_setup("Who is managing?", managing_payers)
@@ -91,7 +94,7 @@ else:
             return None
 
         # Checking all possible acceptable user input combinations.
-        
+
         # MSHO type selected when primary/secondary managed payers are identical. This is acceptable (but a more involved process for the user instead of just selecting MSHO initially).
         if ma_type == 1: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
 
@@ -109,11 +112,17 @@ else:
             case 2: # Primary managed Medicare
                 match sec_payer:
                     case 1: # Primary managed Medicare, secondary straight MA
-                        return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]})."
-                    case 2: # Primary managed medicare, secondary Managed MA
-                        return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}."
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": # Payers with auth upon admission
+                            return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]})."
+                        else: return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]}).\n\nPrior auth required."
+                    case 2: # Primary managed Medicare, secondary Managed MA
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC":  # Payers with auth upon admission
+                            return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}."
+                        else: f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}.\n\nPrior auth required."
                     case 3: # Primary managed Medicare, secondary PP
-                        return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends."
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC":  # Payers with auth upon admission
+                            return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends."
+                        else: f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends.\n\nPrior auth required."
 
             case 3: # Primary straight MA
                 return f"Fronts are fine. No skilled payer. Non-skilled is straight MA ({ma_types[ma_type]})."
@@ -144,7 +153,7 @@ else:
 
     def main():
         # Master lists.
-        prim_payers_list = {1: "Medicare", 2: "Managed Medicare", 3: "MA", 4: "Managed MA", 5: "MSHO", 6: "Private pay"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
+        prim_payers_list = {1: "Medicare", 2: "Managed Medicare", 3: "MA", 4: "Managed MA", 5: "MSHO", 6: "Private pay", 7: "Quit"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
         sec_payers_list = {1: "MA", 2: "Managed MA", 3: "Private pay"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
         managing_payers = {1: "Aetna", 2: "Cigna", 3: "BCBS", 4: "Humana", 5: "Medica", 6: "UHC", 7: "HealthPartners", 8: "UCare"} # This dictionary can be altered without issue as long as the numbering system starts at 1 and is consecutive.
         ma_types = {1: "MA02 MSHO", 2: "MA12 PMAP", 3: "MA17 SNBC", 4: "MA25 MSC+", 5: "MA30 MSC+", 6: "MA35 MSC+", 7: "None/unspecified"} # NOTE: Key 7 is hard-coded in output_text() to change the value to be in all lowercase. To change this list, ensure that the case change in output_text() references the correct key. Aside from that, this dictionary may be changed as long as the numbers begin at 1 and are consecutive.
