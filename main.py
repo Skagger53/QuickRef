@@ -101,7 +101,7 @@ else:
                 return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
             else: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}.\n\nPrior auth required."
 
-        ma_types[7] = ma_types[7].lower() # Changing the initial capital to lowercase for correct capitalization in email
+        ma_types[8] = ma_types[8].lower() # Changing the initial capital to lowercase for correct capitalization in email
         match prim_payer:
             case 1: # Primary Medicare
                 match sec_payer:
@@ -159,7 +159,7 @@ else:
         prim_payers_list = {1: "Medicare", 2: "Managed Medicare", 3: "MA", 4: "Managed MA", 5: "MSHO", 6: "Private pay", 7: "Quit"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
         sec_payers_list = {1: "MA", 2: "Managed MA", 3: "Private pay"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
         managing_payers = {1: "Aetna", 2: "Cigna", 3: "BCBS", 4: "Humana", 5: "Medica", 6: "UHC", 7: "HealthPartners", 8: "UCare"} # This dictionary can be altered without issue as long as the numbering system starts at 1 and is consecutive.
-        ma_types = {1: "MA02 MSHO", 2: "MA12 PMAP", 3: "MA17 SNBC", 4: "MA25 MSC+", 5: "MA30 MSC+", 6: "MA35 MSC+", 7: "None/unspecified"} # NOTE: Key 7 is hard-coded in output_text() to change the value to be in all lowercase. To change this list, ensure that the case change in output_text() references the correct key. Aside from that, this dictionary may be changed as long as the numbers begin at 1 and are consecutive.
+        ma_types = {1: "MA02 MSHO", 2: "MA12 PMAP", 3: "MA17 SNBC", 4: "MA25 MSC+", 5: "MA30 MSC+", 6: "MA35 MSC+", 7: "MA37 SNBC", 8: "None/unspecified"} # NOTE: Key 8 is hard-coded in output_text() to change the value to be in all lowercase. To change this list, ensure that the case change in output_text() references the correct key. Aside from that, this dictionary may be changed as long as the numbers begin at 1 and are consecutive.
 
         # This begins user interaction. Obtains all payer information. Arguments are master payer lists.
         prim_payer, prim_man_payer, sec_payer, sec_man_payer, ma_type = payers_setup(prim_payers_list, sec_payers_list, managing_payers, ma_types)
