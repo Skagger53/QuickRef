@@ -101,37 +101,46 @@ else:
                 return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
             else: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}.\n\nPrior auth required."
 
-        ma_types[8] = ma_types[8].lower() # Changing the initial capital to lowercase for correct capitalization in email
+        ma_types[9] = ma_types[9].lower() # Changing the initial capital to lowercase for correct capitalization in email
         match prim_payer:
             case 1: # Primary Medicare
                 match sec_payer:
                     case 1: # Primary Medicare, secondary MA
-                        return f"Fronts are fine. Skilled is Medicare. Non-skilled is MA ({ma_types[ma_type]})."
+                        if ma_types[ma_type] != "AC": return f"Fronts are fine. Skilled is Medicare. Non-skilled is MA ({ma_types[ma_type]})."
+                        return f"Fronts are not OK. Skilled is Medicare. No non-skilled payer. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends."
                     case 2: # Primary Medicare, secondary managed MA
-                        return f"Fronts are fine. Skilled is Medicare. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}."
+                        if ma_types[ma_type] != "AC": return f"Fronts are fine. Skilled is Medicare. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}."
+                        return f"Fronts are not OK. Skilled is Medicare. No non-skilled payer. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends."
                     case 3: # Primary Medicare, secondary PP
                         return f"Fronts are not OK. Skilled is Medicare. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends."
 
             case 2: # Primary managed Medicare
                 match sec_payer:
                     case 1: # Primary managed Medicare, secondary straight MA
-                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": # Payers with auth upon admission
-                            return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]})."
-                        else: return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]}).\n\nPrior auth required."
+                        if ma_types[ma_type] != "AC": # All cases with acceptable MA types (not AC)
+                            if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": # Payers with auth upon admission
+                                return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]})."
+                            else: return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]}).\n\nPrior auth required."
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": auth_note = "" # Payers with auth upon admission with MA type AC
+                        else: auth_note = "\n\nPrior auth required."
+                        return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nUnless the patient wants to be PP for copays (and/or full payments if {managing_payers[prim_man_payer]} denies), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if {managing_payers[prim_man_payer]} denies.{auth_note}"
                     case 2: # Primary managed Medicare, secondary Managed MA
-                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC":  # Payers with auth upon admission
-                            return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}."
-                        else: f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}.\n\nPrior auth required."
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": auth_note = ""  # Payers with auth upon admission
+                        else: auth_note = "\n\nPrior auth required."
+                        if ma_types[ma_type] != "AC": return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}.{auth_note}" # All acceptable MA types (not AC)
+                        return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nUnless the patient wants to be PP for copays (and/or full payments if {managing_payers[prim_man_payer]} denies), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if {managing_payers[prim_man_payer]} denies.{auth_note}"
                     case 3: # Primary managed Medicare, secondary PP
-                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC":  # Payers with auth upon admission
-                            return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends."
-                        else: return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if Medicare ends), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if Medicare coverage ends.\n\nPrior auth required."
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": auth_note = ""  # Payers with auth upon admission
+                        else: auth_note = "\n\nPrior auth required."
+                        return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if {managing_payers[prim_man_payer]} denies), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if {managing_payers[prim_man_payer]} denies.{auth_note}"
 
             case 3: # Primary straight MA
-                return f"Fronts are fine. No skilled payer. Non-skilled is straight MA ({ma_types[ma_type]})."
+                if ma_types[ma_type] != "AC": return f"Fronts are fine. No skilled payer. Non-skilled is straight MA ({ma_types[ma_type]})."
+                return "Fronts are not OK. Only payer is private pay. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nWe will require a down payment of $3500 to accept. I also need to know the patient's stated plans for either DC or continuation of payment after the $3500 is exhausted, which will be in approximately 8 or 9 days (and could be fewer)."
 
             case 4: # Primary managed MA
-                return f"Fronts are fine. No skilled payer. Non-skilled is MA managed by {managing_payers[prim_man_payer]} ({ma_types[ma_type]})."
+                if ma_types[ma_type] != "AC": return f"Fronts are fine. No skilled payer. Non-skilled is MA managed by {managing_payers[prim_man_payer]} ({ma_types[ma_type]})."
+                return "Fronts are not OK. Only payer is private pay. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nWe will require a down payment of $3500 to accept. I also need to know the patient's stated plans for either DC or continuation of payment after the $3500 is exhausted, which will be in approximately 8 or 9 days (and could be fewer)."
 
             case 5:  # Primary MSHO
                 return f"Fronts are fine. MSHO with {managing_payers[prim_man_payer]} (MA02 MSHO)."
@@ -159,7 +168,7 @@ else:
         prim_payers_list = {1: "Medicare", 2: "Managed Medicare", 3: "MA", 4: "Managed MA", 5: "MSHO", 6: "Private pay", 7: "Quit"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
         sec_payers_list = {1: "MA", 2: "Managed MA", 3: "Private pay"}  # These are hard-coded. Making a change here will require changing the match-case in output_text().
         managing_payers = {1: "Aetna", 2: "Cigna", 3: "BCBS", 4: "Humana", 5: "Medica", 6: "UHC", 7: "HealthPartners", 8: "UCare"} # This dictionary can be altered without issue as long as the numbering system starts at 1 and is consecutive.
-        ma_types = {1: "MA02 MSHO", 2: "MA12 PMAP", 3: "MA17 SNBC", 4: "MA25 MSC+", 5: "MA30 MSC+", 6: "MA35 MSC+", 7: "MA37 SNBC", 8: "None/unspecified"} # NOTE: Key 8 is hard-coded in output_text() to change the value to be in all lowercase. To change this list, ensure that the case change in output_text() references the correct key. Aside from that, this dictionary may be changed as long as the numbers begin at 1 and are consecutive.
+        ma_types = {1: "MA02 MSHO", 2: "MA12 PMAP", 3: "MA17 SNBC", 4: "MA25 MSC+", 5: "MA30 MSC+", 6: "MA35 MSC+", 7: "MA37 SNBC", 8: "AC", 9: "None/unspecified"} # NOTE: Key 9 is hard-coded in output_text() to change the value to be in all lowercase. To change this list, ensure that the case change in output_text() references the correct key. Aside from that, this dictionary may be changed as long as the numbers begin at 1 and are consecutive.
 
         # This begins user interaction. Obtains all payer information. Arguments are master payer lists.
         prim_payer, prim_man_payer, sec_payer, sec_man_payer, ma_type = payers_setup(prim_payers_list, sec_payers_list, managing_payers, ma_types)
