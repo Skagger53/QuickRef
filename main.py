@@ -96,10 +96,13 @@ else:
         # Checking all possible acceptable user input combinations.
 
         # MSHO type selected when primary/secondary managed payers are identical. This is acceptable (but a more involved process for the user instead of just selecting MSHO initially).
+        no_auth_note = "\n\nNo prior auth required."
+        yes_auth_note = "\n\nPrior auth required."
+
         if ma_type == 1:
-            if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC":  # Payers with auth upon admission
-                return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}."
-            else: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}.\n\nPrior auth required."
+            if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare":  # Payers with auth upon admission
+                return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}.{no_auth_note}"
+            else: return f"\nFronts are fine. MSHO with {managing_payers[prim_man_payer]}.{yes_auth_note}"
 
         ma_types[9] = ma_types[9].lower() # Changing the initial capital to lowercase for correct capitalization in email
         match prim_payer:
@@ -118,22 +121,22 @@ else:
                 match sec_payer:
                     case 1: # Primary managed Medicare, secondary straight MA
                         if ma_types[ma_type] != "AC": # All cases with acceptable MA types (not AC)
-                            if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": # Payers with auth upon admission
-                                return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]})."
-                            else: return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]}).\n\nPrior auth required."
-                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": auth_note = "" # Payers with auth upon admission with MA type AC
-                        else: auth_note = "\n\nPrior auth required."
+                            if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare": # Payers with auth upon admission
+                                return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]}).{no_auth_note}"
+                            else: return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is straight MA ({ma_types[ma_type]}).{yes_auth_note}"
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare": auth_note = no_auth_note # Payers with auth upon admission with MA type AC
+                        else: auth_note = yes_auth_note
                         return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nUnless the patient wants to be PP for copays (and/or full payments if {managing_payers[prim_man_payer]} denies), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if {managing_payers[prim_man_payer]} denies.{auth_note}"
                     case 2: # Primary managed Medicare, secondary Managed MA
-                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": auth_note = ""  # Payers with auth upon admission
-                        else: auth_note = "\n\nPrior auth required."
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare": auth_note = no_auth_note  # Payers with auth upon admission
+                        else: auth_note = yes_auth_note
                         if ma_types[ma_type] != "AC":
                             if managing_payers[prim_man_payer] == managing_payers[sec_man_payer]: return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]} (not MSHO).{auth_note}" # Same insurance managing Medicare and MA but not MSHO.
                             return f"Fronts are fine. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. Non-skilled is MA ({ma_types[ma_type]}) managed by {managing_payers[sec_man_payer]}.{auth_note}" # All acceptable MA types (not AC, different insurances for Medicare and MA)
                         return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nUnless the patient wants to be PP for copays (and/or full payments if {managing_payers[prim_man_payer]} denies), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if {managing_payers[prim_man_payer]} denies.{auth_note}"
                     case 3: # Primary managed Medicare, secondary PP
-                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare" or managing_payers[prim_man_payer] == "UHC": auth_note = ""  # Payers with auth upon admission
-                        else: auth_note = "\n\nPrior auth required."
+                        if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare": auth_note = no_auth_note  # Payers with auth upon admission
+                        else: auth_note = yes_auth_note
                         return f"Fronts are not OK. Skilled is Medicare managed by {managing_payers[prim_man_payer]}. No non-skilled payer.\n\nUnless the patient wants to be PP for copays (and/or full payments if {managing_payers[prim_man_payer]} denies), I'll need one of two things to accept:\n1. A completed MA application for me to review.\n2. The patient's stated DC plan if they want to avoid SNF day 21+ daily copays ($194.50) and/or full private pay if {managing_payers[prim_man_payer]} denies.{auth_note}"
 
             case 3: # Primary straight MA
