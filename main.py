@@ -148,7 +148,10 @@ else:
                 return "Fronts are not OK. Only payer is private pay. (MA type is AC, which has no SNF coverage. The patient would need to apply for MA with a DHS-3531 or equivalent.)\n\nWe will require a down payment of $3500 to accept. I also need to know the patient's stated plans for either DC or continuation of payment after the $3500 is exhausted, which will be in approximately 8 or 9 days (and could be fewer)."
 
             case 5:  # Primary MSHO
-                return f"Fronts are fine. MSHO with {managing_payers[prim_man_payer]} (MA02 MSHO)."
+                if managing_payers[prim_man_payer] == "HealthPartners" or managing_payers[prim_man_payer] == "UCare":  # Payers with auth upon admission
+                    return f"Fronts are fine. MSHO with {managing_payers[prim_man_payer]} (MA02 MSHO).{no_auth_note}"
+                else:
+                    return f"Fronts are fine. MSHO with {managing_payers[prim_man_payer]} (MA02 MSHO).{yes_auth_note}"
 
             case 6: # Primary PP
                 return "Only payer is private pay.\n\nWe will require a down payment of $3500 to accept. I also need to know the patient's stated plans for either DC or continuation of payment after the $3500 is exhausted, which will be in approximately 8 or 9 days (and could be fewer)."
